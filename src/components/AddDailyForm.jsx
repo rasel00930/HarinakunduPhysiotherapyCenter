@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 
 const AddDailyForm = () => {
@@ -8,7 +8,6 @@ const AddDailyForm = () => {
     phone: "",
     payment: "",
     date: "",
-    createdAt: new Date(),
   });
 
   const handleChange = (e) => {
@@ -18,17 +17,25 @@ const AddDailyForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const user = auth.currentUser;
+    if (!user) {
+      alert("⚠️ You must be logged in to submit a statement.");
+      return;
+    }
+
     try {
       await addDoc(collection(db, "dailyStatements"), {
         ...form,
         payment: parseFloat(form.payment),
         createdAt: Timestamp.now(),
+        ownerId: user.uid, // ✅ track who submitted it
       });
-      alert("Daily statement saved!");
+
+      alert("✅ Daily statement saved!");
       setForm({ name: "", phone: "", payment: "", date: "" });
     } catch (error) {
       console.error("Error adding daily statement:", error);
-      alert("Failed to save daily statement.");
+      alert("❌ Failed to save daily statement.");
     }
   };
 

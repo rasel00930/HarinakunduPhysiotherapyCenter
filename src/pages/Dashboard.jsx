@@ -7,6 +7,10 @@ import PeopleList from "../components/PeopleList";
 import { db } from "../firebase";
 import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import LogoutButton from "../components/LogoutButton";
+import { auth } from "../firebase";
+import { query, where } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,8 +22,16 @@ const Dashboard = () => {
   const [people, setPeople] = useState([]);
   const [filtered, setFiltered] = useState([]);
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "people"), (snapshot) => {
+useEffect(() => {
+  const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    if (!user) return;
+
+    const q = query(
+      collection(db, "people"),
+      where("ownerId", "==", user.uid)
+    );
+
+    const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
       const peopleData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -29,8 +41,14 @@ const Dashboard = () => {
       setFiltered(peopleData);
     });
 
-    return () => unsubscribe();
-  }, []);
+    // Firestore listener cleanup
+    return () => unsubscribeSnapshot();
+  });
+
+  // Auth listener cleanup
+  return () => unsubscribeAuth();
+}, []);
+
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);

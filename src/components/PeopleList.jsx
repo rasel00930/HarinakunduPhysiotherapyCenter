@@ -39,7 +39,7 @@ const PeopleList = ({ people, onDelete }) => {
     docPDF.text(`Disease: ${person.disease}`, 20, 60);
     docPDF.text(`Description: ${person.description}`, 20, 70);
     docPDF.text(`Payment: ${person.payment} tk`, 20, 80);
-    docPDF.text(`Received: ${person.paymentReceived} tk`, 20, 90);
+    docPDF.text(`Village: ${person.paymentReceived}`, 20, 90);
     docPDF.text(`Date: ${new Date(person.date).toLocaleDateString()}`, 20, 100);
     docPDF.save(`${person.name}_info.pdf`);
   };
@@ -88,10 +88,10 @@ const PeopleList = ({ people, onDelete }) => {
             <th className="py-3 px-4 text-left">Phone</th>
             <th className="py-3 px-4 text-left">Disease</th>
             <th className="py-3 px-4 text-left">Treatment</th>
+            <th className="py-3 px-4 text-left">Village</th>
             <th className="py-3 px-4 text-left">Payment</th>
-            <th className="py-3 px-4 text-left">Received</th>
             <th className="py-3 px-4 text-left">Date</th>
-            <th className="py-3 px-4 text-left">Actions</th>
+            <th className="py-3 px-4 text-center w-48">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -105,8 +105,8 @@ const PeopleList = ({ people, onDelete }) => {
               <td className="py-3 px-4">{person.number}</td>
               <td className="py-3 px-4">{person.disease}</td>
               <td className="py-3 px-4">{person.description}</td>
-              <td className="py-3 px-4">{person.payment} tk</td>
-              <td className="py-3 px-4">{person.paymentReceived} tk</td>
+              <td className="py-3 px-4">{person.payment} </td>
+              <td className="py-3 px-4">{person.paymentReceived}tk</td>
               <td className="py-3 px-4">{new Date(person.date).toLocaleDateString()}</td>
               <td className="py-3 px-4">
                 <div className="flex flex-nowrap gap-2 justify-center">

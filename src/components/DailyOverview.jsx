@@ -1,6 +1,7 @@
 import React from 'react';
 
 const DailyOverview = ({ data }) => {
+   console.log("Overview Data:", data);
   const totalRecords = data.length;
 
   const totalReceived = data.reduce((sum, item) => {
