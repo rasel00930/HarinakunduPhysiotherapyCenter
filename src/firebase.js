@@ -6,14 +6,13 @@ import { getFirestore } from "firebase/firestore";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDdqZLAOOcap6H_0DNd2i5XBjy_p3MgRdw",
-  authDomain: "doctor-appointment-record.firebaseapp.com",
-  projectId: "doctor-appointment-record",
-  storageBucket: "doctor-appointment-record.firebasestorage.app",
-  messagingSenderId: "186568009428",
-  appId: "1:186568009428:web:64652648ce57faae0afd41"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
-
 
 
 const app = initializeApp(firebaseConfig);
