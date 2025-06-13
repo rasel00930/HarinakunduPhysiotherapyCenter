@@ -12,7 +12,9 @@ const DailyStatement = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [historyFilter, setHistoryFilter] = useState("today");
+  const [selectedMonth, setSelectedMonth] = useState(dayjs().month()); // 0-based (January = 0)
 
+  // Auth and Firestore data fetching
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (!user) return;
@@ -36,43 +38,58 @@ const DailyStatement = () => {
     return () => unsubscribeAuth();
   }, []);
 
+  // Filtering logic
   useEffect(() => {
-  if (view === "history") {
-    const today = dayjs().format("YYYY-MM-DD");
+    if (view === "history") {
+      const today = dayjs().format("YYYY-MM-DD");
 
-    // আজকের আগের দিনগুলোর ডাটা
-    const previousDates = data.filter((item) => {
-      const itemDate = item.date
-        ? dayjs(item.date).format("YYYY-MM-DD")
-        : item.createdAt
-        ? dayjs(item.createdAt.toDate()).format("YYYY-MM-DD")
-        : null;
+      const previousDates = data.filter((item) => {
+        const itemDate = item.date
+          ? dayjs(item.date).format("YYYY-MM-DD")
+          : item.createdAt
+          ? dayjs(item.createdAt.toDate()).format("YYYY-MM-DD")
+          : null;
 
-      return itemDate < today|| itemDate>today;  // আজকের দিনের থেকে ছোট (আগের দিন)
-    });
+        return itemDate < today || itemDate > today;
+      });
 
-    // আজকের ডাটা
-    const todayData = data.filter((item) => {
-      const itemDate = item.date
-        ? dayjs(item.date).format("YYYY-MM-DD")
-        : item.createdAt
-        ? dayjs(item.createdAt.toDate()).format("YYYY-MM-DD")
-        : null;
+      const todayData = data.filter((item) => {
+        const itemDate = item.date
+          ? dayjs(item.date).format("YYYY-MM-DD")
+          : item.createdAt
+          ? dayjs(item.createdAt.toDate()).format("YYYY-MM-DD")
+          : null;
 
-      return itemDate === today;
-    });
+        return itemDate === today;
+      });
 
-    if (historyFilter === "today") {
-      setFilteredData(todayData);
-    } else if (historyFilter === "previous") {
-      setFilteredData(previousDates);
+      const monthlyData = data.filter((item) => {
+        const itemDate = item.date
+          ? dayjs(item.date)
+          : item.createdAt
+          ? dayjs(item.createdAt.toDate())
+          : null;
+
+        return (
+          itemDate &&
+          itemDate.month() === selectedMonth &&
+          itemDate.year() === dayjs().year()
+        );
+      });
+
+      if (historyFilter === "today") {
+        setFilteredData(todayData);
+      } else if (historyFilter === "previous") {
+        setFilteredData(previousDates);
+      } else if (historyFilter === "monthly") {
+        setFilteredData(monthlyData);
+      }
     }
-  }
-}, [data, view, historyFilter]);
-
+  }, [data, view, historyFilter, selectedMonth]);
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gray-50">
+      {/* Top View Switch Buttons */}
       <div className="flex gap-2 justify-center mb-6">
         <button
           onClick={() => setView("add")}
@@ -94,35 +111,68 @@ const DailyStatement = () => {
         </button>
       </div>
 
+      {/* History Filter Buttons */}
       {view === "history" && (
-        <div className="flex gap-2 justify-center mb-4">
-          <button
-            onClick={() => setHistoryFilter("today")}
-            className={`px-4 py-1 rounded-md ${
-              historyFilter === "today"
-                ? "bg-green-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Today
-          </button>
-          <button
-            onClick={() => setHistoryFilter("previous")}
-            className={`px-4 py-1 rounded-md ${
-              historyFilter === "previous"
-                ? "bg-green-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Previous Day
-          </button>
-        </div>
+        <>
+          <div className="flex gap-2 justify-center mb-4 flex-wrap">
+            <button
+              onClick={() => setHistoryFilter("today")}
+              className={`px-4 py-1 rounded-md ${
+                historyFilter === "today"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200"
+              }`}
+            >
+              Today
+            </button>
+            <button
+              onClick={() => setHistoryFilter("previous")}
+              className={`px-4 py-1 rounded-md ${
+                historyFilter === "previous"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200"
+              }`}
+            >
+              Previous Day
+            </button>
+            <button
+              onClick={() => setHistoryFilter("monthly")}
+              className={`px-4 py-1 rounded-md ${
+                historyFilter === "monthly"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200"
+              }`}
+            >
+              Monthly
+            </button>
+          </div>
+
+          {/* Monthly Dropdown */}
+          {historyFilter === "monthly" && (
+            <div className="flex justify-center mb-4">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                className="px-4 py-2 border rounded-md"
+              >
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <option key={index} value={index}>
+                    {dayjs().month(index).format("MMMM")}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </>
       )}
 
+      {/* Overview Component */}
       {view !== "add" && <DailyOverview data={filteredData} />}
 
+      {/* Form View */}
       {view === "add" && <AddDailyForm />}
 
+      {/* Table View */}
       {(view === "search" || view === "history") && (
         <DailyStatementTable
           mode={view}
@@ -135,3 +185,4 @@ const DailyStatement = () => {
 };
 
 export default DailyStatement;
+
